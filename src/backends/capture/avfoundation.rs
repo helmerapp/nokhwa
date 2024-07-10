@@ -122,6 +122,10 @@ impl AVFoundationCaptureDevice {
 
 #[cfg(target_os = "macos")]
 impl CaptureTrait for AVFoundationCaptureDevice {
+    fn init(&mut self) -> Result<(), NokhwaError> {
+        self.device.lock()?;
+        Ok(())
+    }
     fn backend(&self) -> ApiBackend {
         ApiBackend::AVFoundation
     }

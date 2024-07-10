@@ -73,7 +73,7 @@ impl CallbackCamera {
         format: RequestedFormat,
         callback: impl FnMut(Buffer) + Send + 'static,
     ) -> Result<Self, NokhwaError> {
-        let arc_camera = Arc::new(Mutex::new(Camera::new(index, format)?));
+        let arc_camera = Arc::new(Mutex::new(Camera::new()?));
         let current_camera = arc_camera
             .lock()
             .map_err(|why| NokhwaError::GetPropertyError {

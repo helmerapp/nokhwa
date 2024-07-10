@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use crate::{ types::Resolution};
+use crate::types::Resolution;
 use bytes::Bytes;
 
 /// A buffer returned by a camera to accommodate custom decoding.
@@ -72,7 +72,6 @@ use image::ImageBuffer;
 
 #[cfg(feature = "opencv-mat")]
 impl Buffer {
-    
     /// Decodes a image with allocation using the provided [`FormatDecoder`].
     /// # Errors
     /// Will error when the decoding fails.
@@ -90,7 +89,7 @@ impl Buffer {
                 })?;
         Ok(image)
     }
-    
+
     /// Decodes a image with allocation using the provided [`FormatDecoder`] into a `buffer`.
     /// # Errors
     /// Will error when the decoding fails, or the provided buffer is too small.
@@ -123,7 +122,7 @@ impl Buffer {
     ) -> Result<opencv::core::Mat, NokhwaError> {
         use image::Pixel;
         use opencv::core::{Mat, Mat_AUTO_STEP, CV_8UC1, CV_8UC2, CV_8UC3, CV_8UC4};
-    
+
         let array_type = match F::Output::CHANNEL_COUNT {
             1 => CV_8UC1,
             2 => CV_8UC2,
@@ -137,7 +136,7 @@ impl Buffer {
                 })
             }
         };
-    
+
         unsafe {
             // TODO: Look into removing this unnecessary copy.
             let mat1 = Mat::new_rows_cols_with_data(
@@ -152,15 +151,18 @@ impl Buffer {
                 destination: "OpenCV Mat".to_string(),
                 error: why.to_string(),
             })?;
-    
+
             Ok(mat1)
         }
     }
 }
 
-#[cfg(feature = "wgpu-types")]
-use wgpu::{Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, ImageCopyTexture, TextureAspect, ImageDataLayout};
 use crate::frame_format::FrameFormat;
+#[cfg(feature = "wgpu-types")]
+use wgpu::{
+    Extent3d, ImageCopyTexture, ImageDataLayout, TextureAspect, TextureDescriptor,
+    TextureDimension, TextureFormat, TextureUsages,
+};
 
 #[cfg(feature = "wgpu-types")]
 impl Buffer {
@@ -175,13 +177,13 @@ impl Buffer {
         label: Option<&'a str>,
     ) -> Result<wgpu::Texture, NokhwaError> {
         let frame = self.frame()?.decode_image::<RgbAFormat>()?;
-    
+
         let texture_size = Extent3d {
             width: frame.width(),
             height: frame.height(),
             depth_or_array_layers: 1,
         };
-    
+
         let texture = device.create_texture(&TextureDescriptor {
             label,
             size: texture_size,
@@ -192,10 +194,10 @@ impl Buffer {
             usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
             view_formats: &[TextureFormat::Rgba8UnormSrgb],
         });
-    
+
         let width_nonzero = 4 * frame.width();
         let height_nonzero = frame.height();
-    
+
         queue.write_texture(
             ImageCopyTexture {
                 texture: &texture,
@@ -211,7 +213,7 @@ impl Buffer {
             },
             texture_size,
         );
-    
+
         Ok(texture)
     }
 }

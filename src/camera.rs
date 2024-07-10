@@ -51,10 +51,6 @@ impl CaptureTrait for Camera {
         todo!()
     }
 
-    fn init_with_format(&mut self, format: FormatFilter) -> Result<CameraFormat, NokhwaError> {
-        todo!()
-    }
-
     fn backend(&self) -> ApiBackend {
         todo!()
     }

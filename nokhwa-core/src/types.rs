@@ -1,27 +1,19 @@
-use crate::{
-    error::NokhwaError,
-    frame_format::{FrameFormat},
-};
+use crate::traits::Distance;
+use crate::{error::NokhwaError, frame_format::FrameFormat};
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
 use std::{
-    fmt::{
-        Debug,
-        Display,
-        Formatter
-    },
     borrow::Borrow,
     cmp::Ordering,
-    hash::{Hash, Hasher}
+    fmt::{Debug, Display, Formatter},
+    hash::{Hash, Hasher},
 };
-use crate::traits::Distance;
 
 /// Creates a range of values.
 ///
 /// Inclusive by default.
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
-pub struct Range<T>
-{
+pub struct Range<T> {
     minimum: Option<T>,
     lower_inclusive: bool,
     maximum: Option<T>,
@@ -73,7 +65,7 @@ where
     pub fn in_range(&self, item: T) -> bool {
         if let Some(pref) = self.preferred {
             if pref == item {
-                return true
+                return true;
             }
         }
 
@@ -101,7 +93,6 @@ where
 
         true
     }
-
 
     pub fn set_minimum(&mut self, minimum: Option<T>) {
         self.minimum = minimum;
@@ -153,8 +144,6 @@ where
         }
     }
 }
-
-
 
 /// Describes the index of the camera.
 /// - Index: A numbered index
@@ -332,54 +321,61 @@ impl Distance<u32> for Resolution {
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-/// The frame rate of a camera. DO NOT CONSTRUCT THIS ENUM DIRECTLY. YOU WILL VIOLATE INVARIANTS. Use [`FrameRate::new_integer`], [`FrameRate::new_fraction`], or [`FrameRate::new_float`] instead. 
+/// The frame rate of a camera. DO NOT CONSTRUCT THIS ENUM DIRECTLY. YOU WILL VIOLATE INVARIANTS. Use [`FrameRate::new_integer`], [`FrameRate::new_fraction`], or [`FrameRate::new_float`] instead.
 pub enum FrameRate {
     /// The driver reports the frame rate as a clean integer (e.g. 30 FPS).
     Integer(u32),
     /// The driver reports the frame rate as a floating point number (e.g. 29.97 FPS)
     Float(f32),
     /// The driver reports the frame rate as a fraction (e.g. 2997/1000 FPS)
-    Fraction {
-        numerator: u16,
-        denominator: u16,
-    }
+    Fraction { numerator: u16, denominator: u16 },
 }
 
 impl FrameRate {
     pub fn new_integer(fps: u32) -> Result<Self, NokhwaError> {
         if fps == 0 {
-            return Err(NokhwaError::StructureError { structure: "FrameRate".to_string(), error: "Framerate cannot be 0".to_string() })
+            return Err(NokhwaError::StructureError {
+                structure: "FrameRate".to_string(),
+                error: "Framerate cannot be 0".to_string(),
+            });
         }
-        
+
         Ok(FrameRate::Integer(fps))
     }
 
     pub fn new_float(fps: f32) -> Result<Self, NokhwaError> {
         if fps.is_nan() || fps.is_infinite() || fps.is_sign_negative() || (fps > f32::EPSILON) {
-            return Err(NokhwaError::StructureError { structure: "FrameRate".to_string(), error: "Invalid F32 FrameRate".to_string() })
+            return Err(NokhwaError::StructureError {
+                structure: "FrameRate".to_string(),
+                error: "Invalid F32 FrameRate".to_string(),
+            });
         }
-        
+
         Ok(FrameRate::Float(fps))
     }
 
     pub fn new_fraction(numerator: u16, denominator: u16) -> Result<Self, NokhwaError> {
         if numerator == 0 || denominator == 0 {
-            return Err(NokhwaError::StructureError { structure: "FrameRate".to_string(), error: "Invalid Fraction (denominator or numerator is 0)".to_string() })
+            return Err(NokhwaError::StructureError {
+                structure: "FrameRate".to_string(),
+                error: "Invalid Fraction (denominator or numerator is 0)".to_string(),
+            });
         }
-        
-        Ok(
-            FrameRate::Fraction {
-                numerator,
-                denominator,
-            }
-        )
+
+        Ok(FrameRate::Fraction {
+            numerator,
+            denominator,
+        })
     }
 
     pub fn as_float(&self) -> f32 {
         match self {
             FrameRate::Integer(fps) => *fps as f32,
             FrameRate::Float(fps) => *fps,
-            FrameRate::Fraction { numerator, denominator } => (*numerator as f32) / (*denominator as f32)
+            FrameRate::Fraction {
+                numerator,
+                denominator,
+            } => (*numerator as f32) / (*denominator as f32),
         }
     }
 
@@ -387,7 +383,10 @@ impl FrameRate {
         match self {
             FrameRate::Integer(fps) => *fps,
             FrameRate::Float(fps) => *fps as u32,
-            FrameRate::Fraction { numerator, denominator } => (numerator / denominator) as u32,
+            FrameRate::Fraction {
+                numerator,
+                denominator,
+            } => (numerator / denominator) as u32,
         }
     }
 }
@@ -409,13 +408,12 @@ impl PartialOrd for FrameRate {
 impl Hash for FrameRate {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {
-            FrameRate::Integer(i) => {
-                state.write_u32(*i)
-            }
-            FrameRate::Float(f) => {
-                state.write(f.to_string().as_bytes())
-            }
-            FrameRate::Fraction { denominator, numerator } => {
+            FrameRate::Integer(i) => state.write_u32(*i),
+            FrameRate::Float(f) => state.write(f.to_string().as_bytes()),
+            FrameRate::Fraction {
+                denominator,
+                numerator,
+            } => {
                 state.write_u16(*denominator);
                 state.write_u16(*numerator);
             }
@@ -978,7 +976,8 @@ impl ControlValueDescription {
                 None => false,
             },
             ControlValueDescription::StringList { availible, .. } => {
-                availible.contains(&(setter.as_str().unwrap_or("").to_string())) // what the fuck??
+                availible.contains(&(setter.as_str().unwrap_or("").to_string()))
+                // what the fuck??
             }
         }
 

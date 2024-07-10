@@ -108,7 +108,7 @@ impl FrameFormat {
     pub const LUMA: &'static [FrameFormat] = &[FrameFormat::Luma8, FrameFormat::Luma16];
 
     pub const RGB: &'static [FrameFormat] = &[FrameFormat::Rgb8, FrameFormat::RgbA8];
-    
+
     pub const COLOR_FORMATS: &'static [FrameFormat] = &[
         FrameFormat::H265,
         FrameFormat::H264,
@@ -129,7 +129,7 @@ impl FrameFormat {
         FrameFormat::Rgb8,
         FrameFormat::RgbA8,
     ];
-    
+
     pub const GRAYSCALE: &'static [FrameFormat] = &[FrameFormat::Luma8, FrameFormat::Luma16];
 }
 

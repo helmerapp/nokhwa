@@ -180,7 +180,7 @@ mod internal {
 
                     self.camera_format = CameraFormat::new(
                         Resolution::new(format.width, format.height),
-                        frame_format: ,
+                        frame_format,
                         fps,
                     );
                     Ok(())
@@ -615,12 +615,9 @@ mod internal {
             _ => None,
         }
     }
-    
 
     fn frameformat_to_fourcc(fourcc: FrameFormat) -> FourCC {
-        match fourcc {
-            
-        }
+        match fourcc {}
     }
 }
 
@@ -628,10 +625,12 @@ mod internal {
 mod internal {
     use nokhwa_core::buffer::Buffer;
     use nokhwa_core::error::NokhwaError;
+    use nokhwa_core::format_request::FormatRequest;
+    use nokhwa_core::frame_format::FrameFormat;
     use nokhwa_core::traits::CaptureTrait;
     use nokhwa_core::types::{
         ApiBackend, CameraControl, CameraFormat, CameraIndex, CameraInfo, ControlValueSetter,
-        FrameFormat, KnownCameraControl, RequestedFormat, Resolution,
+        KnownCameraControl, Resolution,
     };
     use std::borrow::Cow;
     use std::collections::HashMap;
@@ -665,7 +664,7 @@ mod internal {
         /// # Errors
         /// This function will error if the camera is currently busy or if `V4L2` can't read device information.
         #[allow(clippy::too_many_lines)]
-        pub fn new(index: &CameraIndex, cam_fmt: RequestedFormat) -> Result<Self, NokhwaError> {
+        pub fn new(index: &CameraIndex, cam_fmt: FormatRequest) -> Result<Self, NokhwaError> {
             Err(NokhwaError::NotImplementedError(
                 "V4L2 only on Linux".to_string(),
             ))

@@ -1,12 +1,9 @@
-use std::{
-    cmp::Ordering,
-    collections::VecDeque
-};
 use crate::{
     frame_format::FrameFormat,
-    types::{CameraFormat, Resolution, FrameRate, Range},
-    traits::Distance
+    traits::Distance,
+    types::{CameraFormat, FrameRate, Range, Resolution},
 };
+use std::{cmp::Ordering, collections::VecDeque};
 
 #[derive(Copy, Clone, Debug, PartialOrd, PartialEq)]
 enum ClosestType {
@@ -36,7 +33,7 @@ impl FormatRequest {
         Self::default()
     }
 
-    pub fn with_standard_frame_formats(mut self) -> Self {
+    pub fn with_standard_frame_formats(self) -> Self {
         self.append_frame_formats(&mut vec![
             FrameFormat::MJpeg,
             FrameFormat::Rgb8,
@@ -130,29 +127,35 @@ impl FormatRequest {
         resolution_satisfied && frame_rate_satisfied && frame_format_satisfied
     }
 
-
     pub fn resolve(&self, list_of_formats: &[CameraFormat]) -> Option<CameraFormat> {
         // filter out bad results
-        let mut remaining_formats = list_of_formats.iter().filter(|x| self.satisfied_by_format(*x)).copied().collect::<Vec<CameraFormat>>();
+        let mut remaining_formats = list_of_formats
+            .iter()
+            .filter(|x| self.satisfied_by_format(*x))
+            .copied()
+            .collect::<Vec<CameraFormat>>();
 
         match self.req_type {
             Some(request) => {
                 match request {
                     CustomFormatRequestType::HighestFrameRate => {
                         remaining_formats.sort_by(|a, b| {
-                            a.frame_rate().partial_cmp(&b.frame_rate()).unwrap_or(Ordering::Equal)
+                            a.frame_rate()
+                                .partial_cmp(&b.frame_rate())
+                                .unwrap_or(Ordering::Equal)
                         });
                         Some(remaining_formats[0])
                     }
                     CustomFormatRequestType::HighestResolution => {
                         remaining_formats.sort_by(|a, b| {
-                            a.frame_rate().partial_cmp(&b.frame_rate()).unwrap_or(Ordering::Equal)
+                            a.frame_rate()
+                                .partial_cmp(&b.frame_rate())
+                                .unwrap_or(Ordering::Equal)
                         });
                         Some(remaining_formats[0])
                     }
                     CustomFormatRequestType::Closest => {
-                        
-                        let mut closest_type = match (&self.frame_rate, &self.resolution) {
+                        let closest_type = match (&self.frame_rate, &self.resolution) {
                             (Some(_), Some(_)) => ClosestType::Both,
                             (Some(_), None) => ClosestType::FrameRate,
                             (None, Some(_)) => ClosestType::Resolution,
@@ -161,57 +164,79 @@ impl FormatRequest {
 
                         match closest_type {
                             ClosestType::Resolution => {
-                                let resolution_point = match self.resolution.map(|x| x.preferred()).flatten() {
-                                    Some(r) => r,
-                                    None => return None,
-                                };
+                                let resolution_point =
+                                    match self.resolution.map(|x| x.preferred()).flatten() {
+                                        Some(r) => r,
+                                        None => return None,
+                                    };
 
-                                let mut distances = remaining_formats.into_iter().map(|fmt| (fmt.resolution().distance_from(&resolution_point), fmt)).collect::<Vec<_>>();
-                                distances.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or_else(|| Ordering::Equal));
+                                let mut distances = remaining_formats
+                                    .into_iter()
+                                    .map(|fmt| {
+                                        (fmt.resolution().distance_from(&resolution_point), fmt)
+                                    })
+                                    .collect::<Vec<_>>();
+                                distances.sort_by(|a, b| {
+                                    a.0.partial_cmp(&b.0).unwrap_or_else(|| Ordering::Equal)
+                                });
                                 VecDeque::from(distances).pop_front().map(|x| x.1)
                             }
 
                             ClosestType::FrameRate => {
-                                let frame_rate_point = match self.frame_rate.map(|x| x.preferred()).flatten() {
-                                    Some(f) => f,
-                                    None => return None,
-                                };
+                                let frame_rate_point =
+                                    match self.frame_rate.map(|x| x.preferred()).flatten() {
+                                        Some(f) => f,
+                                        None => return None,
+                                    };
 
-                                let mut distances = remaining_formats.into_iter().map(|fmt| (fmt.frame_rate().distance_from(&frame_rate_point), fmt)).collect::<Vec<_>>();
-                                distances.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or_else(|| Ordering::Equal));
+                                let mut distances = remaining_formats
+                                    .into_iter()
+                                    .map(|fmt| {
+                                        (fmt.frame_rate().distance_from(&frame_rate_point), fmt)
+                                    })
+                                    .collect::<Vec<_>>();
+                                distances.sort_by(|a, b| {
+                                    a.0.partial_cmp(&b.0).unwrap_or_else(|| Ordering::Equal)
+                                });
                                 VecDeque::from(distances).pop_front().map(|x| x.1)
                             }
                             ClosestType::Both => {
-                                let resolution_point = match self.resolution.map(|x| x.preferred()).flatten() {
-                                    Some(r) => r,
-                                    None => return None,
-                                };                            
-                                
-                                let frame_rate_point = match self.frame_rate.map(|x| x.preferred()).flatten() {
-                                    Some(f) => f,
-                                    None => return None,
-                                };
+                                let resolution_point =
+                                    match self.resolution.map(|x| x.preferred()).flatten() {
+                                        Some(r) => r,
+                                        None => return None,
+                                    };
+
+                                let frame_rate_point =
+                                    match self.frame_rate.map(|x| x.preferred()).flatten() {
+                                        Some(f) => f,
+                                        None => return None,
+                                    };
 
                                 // lets calcuate distance in 3 dimensions (add both resolution and frame_rate together)
 
-                                let mut distances = remaining_formats.into_iter()
+                                let mut distances = remaining_formats
+                                    .into_iter()
                                     .map(|fmt| {
-                                        (fmt.frame_rate().distance_from(&frame_rate_point) + fmt.resolution().distance_from(&resolution_point) as f32, fmt)
+                                        (
+                                            fmt.frame_rate().distance_from(&frame_rate_point)
+                                                + fmt.resolution().distance_from(&resolution_point)
+                                                    as f32,
+                                            fmt,
+                                        )
                                     })
                                     .collect::<Vec<_>>();
-                                distances.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or_else(|| Ordering::Equal));
+                                distances.sort_by(|a, b| {
+                                    a.0.partial_cmp(&b.0).unwrap_or_else(|| Ordering::Equal)
+                                });
                                 VecDeque::from(distances).pop_front().map(|x| x.1)
                             }
-                            ClosestType::None => {
-                                Some(remaining_formats[0])
-                            }
+                            ClosestType::None => Some(remaining_formats[0]),
                         }
                     }
                 }
             }
-            None => {
-                Some(remaining_formats[0])
-            }
+            None => Some(remaining_formats[0]),
         }
     }
 }

@@ -932,8 +932,6 @@ impl AsyncCaptureTrait for BrowserCamera {
                 error: "Bad height Type".to_string(),
             }),
         };
-        
-        
     }
 
     async fn refresh_camera_format_async(&mut self) -> Result<(), NokhwaError> {

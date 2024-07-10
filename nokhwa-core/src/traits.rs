@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+use crate::frame_format::FrameFormat;
+use crate::types::FrameRate;
 use crate::{
     buffer::Buffer,
     error::NokhwaError,
@@ -23,8 +25,6 @@ use crate::{
     },
 };
 use std::{borrow::Cow, collections::HashMap};
-use crate::frame_format::FrameFormat;
-use crate::types::FrameRate;
 
 pub trait Backend {
     const BACKEND: ApiBackend;
@@ -40,7 +40,7 @@ pub trait Backend {
 pub trait CaptureTrait {
     /// Initialize the camera, preparing it for use, with a random format (usually the first one).
     fn init(&mut self) -> Result<(), NokhwaError>;
-    
+
     /// Returns the current backend used.
     fn backend(&self) -> ApiBackend;
 
@@ -123,8 +123,7 @@ pub trait CaptureTrait {
     /// This will also update the cache.
     /// # Errors
     /// If you started the stream and the camera rejects the new frame format, this will return an error.
-    fn set_frame_format(&mut self, fourcc: FrameFormat)
-        -> Result<(), NokhwaError>;
+    fn set_frame_format(&mut self, fourcc: FrameFormat) -> Result<(), NokhwaError>;
 
     /// Gets the value of [`KnownCameraControl`].
     /// # Errors
@@ -303,10 +302,7 @@ pub trait AsyncCaptureTrait: CaptureTrait {
     /// This will also update the cache.
     /// # Errors
     /// If you started the stream and the camera rejects the new frame format, this will return an error.
-    async fn set_frame_format_async(
-        &mut self,
-        fourcc: FrameFormat,
-    ) -> Result<(), NokhwaError>;
+    async fn set_frame_format_async(&mut self, fourcc: FrameFormat) -> Result<(), NokhwaError>;
 
     /// Sets the control to `control` in the camera.
     /// Usually, the pipeline is calling [`camera_control()`](CaptureTrait::camera_control), getting a camera control that way
@@ -383,6 +379,9 @@ pub trait AsyncOneShot: AsyncCaptureTrait {
 
 pub trait VirtualBackendTrait {}
 
-pub trait Distance<T> where T: PartialEq {
+pub trait Distance<T>
+where
+    T: PartialEq,
+{
     fn distance_from(&self, other: &Self) -> T;
 }

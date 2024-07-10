@@ -7,11 +7,14 @@ pub struct NV12Decoder {}
 
 impl Decoder for NV12Decoder {
     const ALLOWED_FORMATS: &'static [SourceFrameFormat] = &[];
-    type Pixel = Rgb<u8>;
-    type Container = Vec<u8>;
+    type OutputPixels = Self::OutputPixels;
+    type PixelContainer = Self::PixelContainer;
     type Error = ();
 
-    fn decode(&mut self, buffer: Buffer) -> Result<ImageBuffer<Self::Pixel, Self::Container>, Self::Error> {
+    fn decode(
+        &mut self,
+        buffer: Buffer,
+    ) -> Result<ImageBuffer<Self::Pixel, Self::Container>, Self::Error> {
         todo!()
     }
 
@@ -25,7 +28,9 @@ impl Decoder for NV12Decoder {
 }
 
 impl StaticDecoder for NV12Decoder {
-    fn decode_static(buffer: Buffer) -> Result<ImageBuffer<Self::Pixel, Self::Container>, Self::Error> {
+    fn decode_static(
+        buffer: Buffer,
+    ) -> Result<ImageBuffer<Self::Pixel, Self::Container>, Self::Error> {
         todo!()
     }
 
@@ -36,6 +41,13 @@ impl StaticDecoder for NV12Decoder {
 
 impl IdemptDecoder for NV12Decoder {
     fn decode_nm(buffer: Buffer) -> Result<ImageBuffer<Self::Pixel, Self::Container>, Self::Error> {
+        todo!()
+    }
+
+    fn decode_nm_to_buffer(
+        &self,
+        buffer: &mut [<<Self as Decoder>::OutputPixels as image::Pixel>::Subpixel],
+    ) -> Result<(), Self::Error> {
         todo!()
     }
 }

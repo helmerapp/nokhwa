@@ -5,10 +5,7 @@ use nokhwa_core::error::NokhwaError;
 use nokhwa_core::frame_format::{FrameFormat, SourceFrameFormat};
 
 #[inline]
-fn decompress(
-    data: &[u8],
-    rgba: bool,
-) -> Result<, NokhwaError> {
+fn decompress(data: &[u8], rgba: bool) -> Result<(), NokhwaError> {
     use mozjpeg::Decompress;
 
     match Decompress::new_mem(data) {
@@ -39,16 +36,19 @@ fn decompress(
     }
 }
 
-
 pub struct MJPegDecoder;
 
 impl Decoder for MJPegDecoder {
-    const ALLOWED_FORMATS: &'static [SourceFrameFormat] = &[SourceFrameFormat::FrameFormat(FrameFormat::MJpeg)];
-    type Pixel = Rgb<u8>;
-    type Container = Vec<u8>;
+    const ALLOWED_FORMATS: &'static [SourceFrameFormat] =
+        &[SourceFrameFormat::FrameFormat(FrameFormat::MJpeg)];
     type Error = NokhwaError;
+    type OutputPixels = Self::OutputPixels;
+    type PixelContainer = Self::PixelContainer;
 
-    fn decode(&mut self, buffer: Buffer) -> Result<ImageBuffer<Self::Pixel, Self::Container>, Self::Error> {
+    fn decode(
+        &mut self,
+        buffer: Buffer,
+    ) -> Result<ImageBuffer<Self::Pixel, Self::Container>, Self::Error> {
         todo!()
     }
 
@@ -62,7 +62,9 @@ impl Decoder for MJPegDecoder {
 }
 
 impl StaticDecoder for MJPegDecoder {
-    fn decode_static(buffer: Buffer) -> Result<ImageBuffer<Self::Pixel, Self::Container>, Self::Error> {
+    fn decode_static(
+        buffer: Buffer,
+    ) -> Result<ImageBuffer<Self::Pixel, Self::Container>, Self::Error> {
         todo!()
     }
 
@@ -72,7 +74,10 @@ impl StaticDecoder for MJPegDecoder {
 }
 
 impl IdemptDecoder for MJPegDecoder {
-    fn decode_nm(&self, buffer: Buffer) -> Result<ImageBuffer<Self::Pixel, Self::Container>, Self::Error> {
+    fn decode_nm(
+        &self,
+        buffer: Buffer,
+    ) -> Result<ImageBuffer<Self::Pixel, Self::Container>, Self::Error> {
         todo!()
     }
 

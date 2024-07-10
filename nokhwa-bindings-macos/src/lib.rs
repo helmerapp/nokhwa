@@ -531,7 +531,7 @@ mod internal {
         );
         let misc = nsstr_to_str(unsafe { msg_send![device, uniqueID] });
 
-        CameraInfo::new(name.as_ref(), &description, misc.as_ref(), index)
+        CameraInfo::new(name.as_ref(), &description, misc.as_ref(), &index)
     }
 
     #[derive(Copy, Clone, Debug, Hash, Ord, PartialOrd, Eq, PartialEq)]

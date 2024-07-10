@@ -1,6 +1,10 @@
 use core::ops::AddAssign;
 
-pub fn min_max_range<N: Copy + PartialOrd + AddAssign<N> + Sized>(min: N, max: N, step: N) -> Vec<N> {
+pub fn min_max_range<N: Copy + PartialOrd + AddAssign<N> + Sized>(
+    min: N,
+    max: N,
+    step: N,
+) -> Vec<N> {
     let mut counter = min;
     let mut nums = vec![min];
 
@@ -8,7 +12,7 @@ pub fn min_max_range<N: Copy + PartialOrd + AddAssign<N> + Sized>(min: N, max: N
         counter += step;
 
         if counter > max {
-            break
+            break;
         }
 
         nums.push(counter)

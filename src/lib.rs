@@ -44,12 +44,12 @@ pub use nokhwa_core::pixel_format::FormatDecoder;
 #[cfg(feature = "output-async")]
 #[cfg_attr(feature = "docs-features", doc(cfg(feature = "output-async")))]
 pub mod async_camera;
+pub mod decoders;
 mod query;
 /// A camera that runs in a different thread and can call your code based on callbacks.
 #[cfg(feature = "output-threaded")]
 #[cfg_attr(feature = "docs-features", doc(cfg(feature = "output-threaded")))]
 pub mod threaded;
-pub mod decoders;
 
 pub use camera::Camera;
 pub use init::*;
