@@ -40,9 +40,9 @@ pub struct Buffer {
     buffer: Bytes,
     source_frame_format: FrameFormat,
     #[cfg(target_os = "macos")]
-    pub sample_buf: Option<Retained<SampleBuf>>,
+    pub raw_sample: Option<Retained<SampleBuf>>,
     #[cfg(target_os = "windows")]
-    pub imf_sample: Option<IMFSample>,
+    pub raw_sample: Option<IMFSample>,
 }
 
 unsafe impl Send for Buffer {}
@@ -56,19 +56,17 @@ impl Buffer {
         res: Resolution,
         buf: &[u8],
         source_frame_format: FrameFormat,
-        #[cfg(target_os = "macos")]
-        sample_buf: Option<Retained<SampleBuf>>,
-        #[cfg(target_os = "windows")]
-        imf_sample: Option<IMFSample>,
+        #[cfg(target_os = "macos")] raw_sample: Option<Retained<SampleBuf>>,
+        #[cfg(target_os = "windows")] raw_sample: Option<IMFSample>,
     ) -> Self {
         Self {
             resolution: res,
             buffer: Bytes::copy_from_slice(buf),
             source_frame_format,
             #[cfg(target_os = "macos")]
-            sample_buf,
+            raw_sample,
             #[cfg(target_os = "windows")]
-            imf_sample
+            raw_sample,
         }
     }
 
