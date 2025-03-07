@@ -1,3 +1,4 @@
+use cidre::{arc::Retained, cm::SampleBuf};
 /*
  * Copyright 2022 l1npengtul <l1npengtul@protonmail.com> / The Nokhwa Contributors
  *
@@ -54,8 +55,8 @@ pub struct AVFoundationCaptureDevice {
     info: CameraInfo,
     buffer_name: CString,
     format: CameraFormat,
-    frame_buffer_receiver: Arc<Receiver<(Vec<u8>, FrameFormat)>>,
-    fbufsnd: Arc<Sender<(Vec<u8>, FrameFormat)>>,
+    frame_buffer_receiver: Arc<Receiver<(Vec<u8>, FrameFormat, Retained<SampleBuf>)>>,
+    fbufsnd: Arc<Sender<(Vec<u8>, FrameFormat, Retained<SampleBuf>)>>,
 }
 
 #[cfg(target_os = "macos")]
@@ -121,7 +122,7 @@ impl AVFoundationCaptureDevice {
 }
 
 #[cfg(target_os = "macos")]
-impl CaptureBackendTrait for AVFoundationCaptureDevice {
+impl<'a> CaptureBackendTrait for AVFoundationCaptureDevice {
     fn backend(&self) -> ApiBackend {
         ApiBackend::AVFoundation
     }
@@ -277,19 +278,18 @@ impl CaptureBackendTrait for AVFoundationCaptureDevice {
             None => false,
         }
     }
-
     fn frame(&mut self) -> Result<Buffer, NokhwaError> {
         self.refresh_camera_format()?;
         let cfmt = self.camera_format();
         let b = self.frame_raw()?;
-        let buffer = Buffer::new(cfmt.resolution(), b.as_ref(), cfmt.format());
+        let buffer = Buffer::new(cfmt.resolution(), b.0.as_ref(), cfmt.format(), Some(b.1));
         let _ = self.frame_buffer_receiver.drain();
         Ok(buffer)
     }
 
-    fn frame_raw(&mut self) -> Result<Cow<[u8]>, NokhwaError> {
+    fn frame_raw(&mut self) -> Result<(Cow<[u8]>, Retained<SampleBuf>), NokhwaError> {
         let result = match self.frame_buffer_receiver.recv() {
-            Ok(recv) => Ok(Cow::from(recv.0)),
+            Ok((raw_buf, _, sample_buf)) => Ok((Cow::from(raw_buf), sample_buf)),
             Err(why) => Err(NokhwaError::ReadFrameError(why.to_string())),
         };
         result

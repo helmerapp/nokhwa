@@ -83,6 +83,7 @@ impl CallbackCamera {
                 Resolution::new(0, 0),
                 &vec![],
                 FrameFormat::GRAY,
+                None,
             ))),
             die_bool: Arc::new(Default::default()),
             current_camera,
@@ -140,6 +141,7 @@ impl CallbackCamera {
             new_fmt.resolution(),
             &Vec::default(),
             self.camera_format()?.format(),
+            None,
         );
         let formats = vec![new_fmt.format()];
         let request = RequestedFormat::with_formats(RequestedFormatType::Exact(new_fmt), &formats);
@@ -198,8 +200,12 @@ impl CallbackCamera {
         *self
             .last_frame_captured
             .lock()
-            .map_err(|why| NokhwaError::GeneralError(why.to_string()))? =
-            Buffer::new(new_res, &Vec::default(), self.camera_format()?.format());
+            .map_err(|why| NokhwaError::GeneralError(why.to_string()))? = Buffer::new(
+            new_res,
+            &Vec::default(),
+            self.camera_format()?.format(),
+            None,
+        );
         self.camera.lock().set_resolution(new_res)
     }
 
@@ -336,10 +342,12 @@ impl CallbackCamera {
             let camera_clone = self.camera.clone();
             let last_frame = self.last_frame_captured.clone();
             let callback = self.frame_callback.clone();
-            let handle = std::thread::spawn(move || {
-                camera_frame_thread_loop(camera_clone, callback, last_frame, die_bool_clone)
-            });
-            *handle_lock = Some(handle);
+            unsafe {
+                let handle = std::thread::spawn(move || {
+                    camera_frame_thread_loop(camera_clone, callback, last_frame, die_bool_clone)
+                });
+                *handle_lock = Some(handle);
+            }
             Ok(())
         } else {
             Err(NokhwaError::OpenStreamError(

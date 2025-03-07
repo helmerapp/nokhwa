@@ -35,6 +35,9 @@ fn main() {
     let first_camera = cameras.first().unwrap();
 
     let mut threaded = CallbackCamera::new(first_camera.index().clone(), format, |buffer| {
+        if let Some(ref buf) = buffer.sample_buf {
+            println!("Sample Buffer: {:?}", buf);
+        }
         let image = buffer.decode_image::<RgbAFormat>().unwrap();
         println!("{}x{} {}", image.width(), image.height(), image.len());
     })

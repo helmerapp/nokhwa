@@ -16,6 +16,16 @@ version = "0.1"
 path = "../nokhwa-core"
 
 [target.'cfg(any(target_os="macos",target_os="ios"))'.dependencies]
+cidre = { git = "https://github.com/yury/cidre", rev = "1e008bec49a0f97aeaaea6130a0ba20fe00aa03b", default-features = false, features = [
+	"private",
+	"blocks",
+	"async",
+	"av",
+	"ca",
+	"cm",
+	"dispatch",
+	"macos_13_0",
+] }
 core-media-sys = "0.1"
 core-video-sys = "0.1"
 cocoa-foundation = "0.1"

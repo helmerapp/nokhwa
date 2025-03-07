@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+use core_media_sys::CMSampleBufferRef;
+use nokhwa_core::traits::FrameRaw;
 use nokhwa_core::types::RequestedFormatType;
 use nokhwa_core::{
     buffer::Buffer,
@@ -25,6 +27,7 @@ use nokhwa_core::{
         FrameFormat, KnownCameraControl, RequestedFormat, Resolution,
     },
 };
+use std::sync::Arc;
 use std::{borrow::Cow, collections::HashMap};
 #[cfg(feature = "output-wgpu")]
 use wgpu::{Device as WgpuDevice, Queue as WgpuQueue, Texture as WgpuTexture};
@@ -384,7 +387,7 @@ impl Camera {
     /// Will get a frame from the camera **without** any processing applied, meaning you will usually get a frame you need to decode yourself.
     /// # Errors
     /// If the backend fails to get the frame (e.g. already taken, busy, doesn't exist anymore), or [`open_stream()`](CaptureBackendTrait::open_stream()) has not been called yet, this will error.
-    pub fn frame_raw(&mut self) -> Result<Cow<[u8]>, NokhwaError> {
+    pub fn frame_raw(&mut self) -> FrameRaw {
         match self.device.frame_raw() {
             Ok(f) => Ok(f),
             Err(why) => Err(why),

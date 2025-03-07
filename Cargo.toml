@@ -49,6 +49,18 @@ test-fail-warning = []
 thiserror = "2.0"
 paste = "1.0"
 flume = "0.11"
+core-media-sys = "0.1"
+cidre = { git = "https://github.com/yury/cidre", rev = "1e008bec49a0f97aeaaea6130a0ba20fe00aa03b", default-features = false, features = [
+	"private",
+	"blocks",
+	"async",
+	"av",
+	"ca",
+	"cm",
+	"dispatch",
+	"macos_13_0",
+] }
+
 
 [dependencies.nokhwa-core]
 version = "0.1"
