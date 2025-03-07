@@ -1123,7 +1123,7 @@ pub mod wmf {
             Ok(())
         }
 
-        pub fn raw_bytes(&mut self) -> Result<Cow<[u8]>, NokhwaError> {
+        pub fn raw_bytes(&mut self) -> Result<(Cow<[u8]>, IMFSample), NokhwaError> {
             let mut imf_sample: Option<IMFSample> = match unsafe { MFCreateSample() } {
                 Ok(sample) => Some(sample),
                 Err(why) => {
@@ -1185,16 +1185,14 @@ pub mod wmf {
             }
 
             let mut data_slice = Vec::with_capacity(buffer_valid_length as usize);
-
             unsafe {
-                // Copy pointer because we're bout to drop IMFSample
-                data_slice.extend_from_slice(std::slice::from_raw_parts_mut(
+                data_slice.extend_from_slice(std::slice::from_raw_parts(
                     buffer_start_ptr,
                     buffer_valid_length as usize,
-                ) as &[u8]);
+                ));
             }
 
-            Ok(Cow::from(data_slice))
+            Ok((Cow::from(data_slice), imf_sample))
         }
 
         pub fn stop_stream(&mut self) {

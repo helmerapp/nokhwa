@@ -13,5 +13,20 @@ default-features = false
 
 [dependencies.nokhwa]
 path = "../.."
-# EDIT THIS!
-features = ["input-avfoundation", "output-threaded"]
+default-features = false
+features = ["output-threaded"]
+
+[target.'cfg(target_os = "macos")'.dependencies.nokhwa]
+path = "../.."
+default-features = false
+features = ["output-threaded", "input-avfoundation"]
+
+[target.'cfg(target_os = "windows")'.dependencies.nokhwa]
+path = "../.."
+default-features = false
+features = ["output-threaded", "input-msmf"]
+
+[target.'cfg(not(any(target_os = "macos", target_os = "windows")))'.dependencies.nokhwa]
+path = "../.."
+default-features = false
+features = ["output-threaded", "input-native"]

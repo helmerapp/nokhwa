@@ -21,10 +21,13 @@ use crate::{
     types::{FrameFormat, Resolution},
 };
 use bytes::Bytes;
+#[cfg(target_os = "macos")]
 use cidre::{arc::Retained, cm::SampleBuf};
 use image::ImageBuffer;
 #[cfg(feature = "opencv-mat")]
 use opencv::{boxed_ref::BoxedRef, core::Mat};
+#[cfg(target_os = "windows")]
+use windows::Win32::Media::MediaFoundation::IMFSample;
 
 /// A buffer returned by a camera to accommodate custom decoding.
 /// Contains information of Resolution, the buffer's [`FrameFormat`], and the buffer.
@@ -38,7 +41,12 @@ pub struct Buffer {
     source_frame_format: FrameFormat,
     #[cfg(target_os = "macos")]
     pub sample_buf: Option<Retained<SampleBuf>>,
+    #[cfg(target_os = "windows")]
+    pub imf_sample: Option<IMFSample>,
 }
+
+unsafe impl Send for Buffer {}
+unsafe impl Sync for Buffer {}
 
 impl Buffer {
     /// Creates a new buffer with a [`&[u8]`].
@@ -48,13 +56,19 @@ impl Buffer {
         res: Resolution,
         buf: &[u8],
         source_frame_format: FrameFormat,
+        #[cfg(target_os = "macos")]
         sample_buf: Option<Retained<SampleBuf>>,
+        #[cfg(target_os = "windows")]
+        imf_sample: Option<IMFSample>,
     ) -> Self {
         Self {
             resolution: res,
             buffer: Bytes::copy_from_slice(buf),
             source_frame_format,
+            #[cfg(target_os = "macos")]
             sample_buf,
+            #[cfg(target_os = "windows")]
+            imf_sample
         }
     }
 

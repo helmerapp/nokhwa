@@ -26,7 +26,8 @@ use std::{borrow::Cow, collections::HashMap, sync::Arc};
 #[cfg(target_os = "macos")]
 pub type FrameRaw<'a> = Result<(Cow<'a, [u8]>, Retained<SampleBuf>), NokhwaError>;
 #[cfg(not(target_os = "macos"))]
-pub type FrameRaw = Result<Cow<[u8]>, NokhwaError>;
+pub type FrameRaw<'a> = Result<Cow<'a, [u8]>, NokhwaError>;
+#[cfg(target_os = "macos")]
 use cidre::{arc::Retained, cm::SampleBuf};
 #[cfg(feature = "wgpu-types")]
 use wgpu::{

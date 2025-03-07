@@ -83,6 +83,7 @@ impl CallbackCamera {
                 Resolution::new(0, 0),
                 &vec![],
                 FrameFormat::GRAY,
+                #[cfg(any(target_os = "macos", target_os = "windows"))]
                 None,
             ))),
             die_bool: Arc::new(Default::default()),
@@ -141,6 +142,7 @@ impl CallbackCamera {
             new_fmt.resolution(),
             &Vec::default(),
             self.camera_format()?.format(),
+            #[cfg(any(target_os = "macos", target_os = "windows"))]
             None,
         );
         let formats = vec![new_fmt.format()];
@@ -204,6 +206,7 @@ impl CallbackCamera {
             new_res,
             &Vec::default(),
             self.camera_format()?.format(),
+            #[cfg(any(target_os = "macos", target_os = "windows"))]
             None,
         );
         self.camera.lock().set_resolution(new_res)

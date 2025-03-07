@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-use core_media_sys::CMSampleBufferRef;
 use nokhwa_core::traits::FrameRaw;
 use nokhwa_core::types::RequestedFormatType;
 use nokhwa_core::{
