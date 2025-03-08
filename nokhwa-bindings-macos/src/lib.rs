@@ -209,6 +209,10 @@ mod internal {
     };
 
     use block::ConcreteBlock;
+    use cidre::{
+        arc::Retained,
+        cm::{self, SampleBuf},
+    };
     use cocoa_foundation::{
         base::Nil,
         foundation::{NSArray, NSDictionary, NSInteger, NSString, NSUInteger},
@@ -415,9 +419,7 @@ mod internal {
             ) {
                 let image_buffer: CVImageBufferRef =
                     unsafe { CMSampleBufferGetImageBuffer(didOutputSampleBuffer) };
-                unsafe {
-                    CVPixelBufferLockBaseAddress(image_buffer, 0);
-                };
+                unsafe { CVPixelBufferLockBaseAddress(image_buffer, 0) };
 
                 let buffer_length = unsafe { CVPixelBufferGetDataSize(image_buffer) };
                 let buffer_ptr = unsafe { CVPixelBufferGetBaseAddress(image_buffer) };
@@ -427,15 +429,22 @@ mod internal {
                 };
 
                 unsafe { CVPixelBufferUnlockBaseAddress(image_buffer, 0) };
+
+                let sample_buf = didOutputSampleBuffer as *const cidre::cm::SampleBuf;
+                let sample_buf = unsafe { &*sample_buf };
+
                 // oooooh scarey unsafe
                 // AAAAAAAAAAAAAAAAAAAAAAAAA
                 // https://c.tenor.com/0e_zWtFLOzQAAAAC/needy-streamer-overload-needy-girl-overdose.gif
                 let bufferlck_cv: *const c_void = unsafe { msg_send![this, bufferPtr] };
                 let buffer_sndr = unsafe {
-                    let ptr = bufferlck_cv.cast::<Sender<(Vec<u8>, FrameFormat)>>();
+                    let ptr =
+                        bufferlck_cv.cast::<Sender<(Vec<u8>, FrameFormat, Retained<SampleBuf>)>>();
                     Arc::from_raw(ptr)
                 };
-                if let Err(_) = buffer_sndr.send((buffer_as_vec, FrameFormat::GRAY)) {
+                if let Err(_) =
+                    buffer_sndr.send((buffer_as_vec, FrameFormat::GRAY, sample_buf.retained()))
+                {
                     // FIXME: dont, what the fuck???
                     return;
                 }
@@ -572,9 +581,7 @@ mod internal {
                 AVCaptureDeviceType::TrueDepth => {
                     str_to_nsstr("AVCaptureDeviceTypeBuiltInTrueDepthCamera")
                 }
-                AVCaptureDeviceType::External => {
-                    str_to_nsstr("AVCaptureDeviceTypeExternal")
-                }
+                AVCaptureDeviceType::External => str_to_nsstr("AVCaptureDeviceTypeExternal"),
             }
         }
     }
@@ -683,7 +690,7 @@ mod internal {
     impl AVCaptureVideoCallback {
         pub fn new(
             device_spec: &CStr,
-            buffer: &Arc<Sender<(Vec<u8>, FrameFormat)>>,
+            buffer: &Arc<Sender<(Vec<u8>, FrameFormat, Retained<SampleBuf>)>>,
         ) -> Result<Self, NokhwaError> {
             let cls = &CALLBACK_CLASS as &Class;
             let delegate: *mut Object = unsafe { msg_send![cls, alloc] };
@@ -2303,7 +2310,7 @@ mod internal {
     }
 
     use cocoa_foundation::base::nil;
-    use core_foundation::base::TCFType;
+    use core_foundation::base::{CFRetain, TCFType};
     use core_foundation::number::CFNumber;
     use core_video_sys::kCVPixelBufferPixelFormatTypeKey;
     impl Default for AVCaptureVideoDataOutput {

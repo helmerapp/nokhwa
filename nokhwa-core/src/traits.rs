@@ -22,7 +22,13 @@ use crate::{
         KnownCameraControl, Resolution,
     },
 };
-use std::{borrow::Cow, collections::HashMap};
+use std::{borrow::Cow, collections::HashMap, sync::Arc};
+#[cfg(target_os = "macos")]
+pub type FrameRaw<'a> = Result<(Cow<'a, [u8]>, Retained<SampleBuf>), NokhwaError>;
+#[cfg(not(target_os = "macos"))]
+pub type FrameRaw<'a> = Result<Cow<'a, [u8]>, NokhwaError>;
+#[cfg(target_os = "macos")]
+use cidre::{arc::Retained, cm::SampleBuf};
 #[cfg(feature = "wgpu-types")]
 use wgpu::{
     Device as WgpuDevice, Extent3d, ImageCopyTexture, ImageDataLayout, Queue as WgpuQueue,
@@ -37,8 +43,7 @@ use wgpu::{
 /// - Backends, if not provided with a camera format, will be spawned with 640x480@15 FPS, MJPEG [`CameraFormat`].
 /// - Behaviour can differ from backend to backend. While the Camera struct abstracts most of this away, if you plan to use the raw backend structs please read the `Quirks` section of each backend.
 /// - If you call [`stop_stream()`](CaptureBackendTrait::stop_stream()), you will usually need to call [`open_stream()`](CaptureBackendTrait::open_stream()) to get more frames from the camera.
-pub trait
-CaptureBackendTrait {
+pub trait CaptureBackendTrait {
     /// Returns the current backend used.
     fn backend(&self) -> ApiBackend;
 
@@ -164,7 +169,7 @@ CaptureBackendTrait {
     /// Will get a frame from the camera **without** any processing applied, meaning you will usually get a frame you need to decode yourself.
     /// # Errors
     /// If the backend fails to get the frame (e.g. already taken, busy, doesn't exist anymore), or [`open_stream()`](CaptureBackendTrait::open_stream()) has not been called yet, this will error.
-    fn frame_raw(&mut self) -> Result<Cow<[u8]>, NokhwaError>;
+    fn frame_raw(&mut self) -> FrameRaw;
 
     /// The minimum buffer size needed to write the current frame. If `alpha` is true, it will instead return the minimum size of the buffer with an alpha channel as well.
     /// This assumes that you are decoding to RGB/RGBA for [`FrameFormat::MJPEG`] or [`FrameFormat::YUYV`] and Luma8/LumaA8 for [`FrameFormat::GRAY`]
@@ -173,7 +178,11 @@ CaptureBackendTrait {
         let cfmt = self.camera_format();
         let resolution = cfmt.resolution();
         let pxwidth = match cfmt.format() {
-            FrameFormat::MJPEG | FrameFormat::YUYV | FrameFormat::RAWRGB | FrameFormat::RAWBGR | FrameFormat::NV12 => 3,
+            FrameFormat::MJPEG
+            | FrameFormat::YUYV
+            | FrameFormat::RAWRGB
+            | FrameFormat::RAWBGR
+            | FrameFormat::NV12 => 3,
             FrameFormat::GRAY => 1,
         };
         if alpha {

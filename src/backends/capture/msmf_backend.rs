@@ -18,7 +18,7 @@ use nokhwa_core::{
     buffer::Buffer,
     error::NokhwaError,
     pixel_format::RgbFormat,
-    traits::CaptureBackendTrait,
+    traits::{CaptureBackendTrait, FrameRaw},
     types::{
         all_known_camera_controls, ApiBackend, CameraControl, CameraFormat, CameraIndex,
         CameraInfo, ControlValueSetter, FrameFormat, KnownCameraControl, RequestedFormat,
@@ -244,15 +244,21 @@ impl CaptureBackendTrait for MediaFoundationCaptureDevice {
     fn frame(&mut self) -> Result<Buffer, NokhwaError> {
         self.refresh_camera_format()?;
         let self_ctrl = self.camera_format();
+        let (bytes, sample) = self.inner.raw_bytes()?;
         Ok(Buffer::new(
             self_ctrl.resolution(),
-            &self.inner.raw_bytes()?,
+            &bytes,
             self_ctrl.format(),
+            Some(sample)
         ))
     }
 
-    fn frame_raw(&mut self) -> Result<Cow<[u8]>, NokhwaError> {
-        self.inner.raw_bytes()
+    fn frame_raw(&mut self) -> FrameRaw {
+        let raw_bytes = self.inner.raw_bytes();
+        match raw_bytes {
+            Ok((bytes, _)) => Ok((bytes)),
+            Err(why) => Err(why),
+        }
     }
 
     fn stop_stream(&mut self) -> Result<(), NokhwaError> {
