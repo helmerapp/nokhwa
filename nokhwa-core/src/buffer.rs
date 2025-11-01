@@ -1,5 +1,3 @@
-use std::{ffi::c_void, sync::Arc};
-
 /*
  * Copyright 2022 l1npengtul <l1npengtul@protonmail.com> / The Nokhwa Contributors
  *

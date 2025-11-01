@@ -11,7 +11,7 @@ fn main() {
         .read_to_end(&mut nv12)
         .unwrap();
 
-    let buffer = Buffer::new(Resolution::new(1920, 1080), &nv12, FrameFormat::NV12);
+    let buffer = Buffer::new(Resolution::new(1920, 1080), &nv12, FrameFormat::NV12, None);
     buffer
         .decode_image::<RgbFormat>()
         .unwrap()
