@@ -209,10 +209,7 @@ mod internal {
     };
 
     use block::ConcreteBlock;
-    use cidre::{
-        arc::Retained,
-        cm::{self, SampleBuf},
-    };
+    use cidre::{arc::Retained, cm::SampleBuf};
     use cocoa_foundation::{
         base::Nil,
         foundation::{NSArray, NSDictionary, NSInteger, NSString, NSUInteger},
