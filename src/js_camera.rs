@@ -2602,17 +2602,8 @@ impl JSCamera {
             dimension: TextureDimension::D2,
             format: TextureFormat::Rgba8UnormSrgb,
             usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
+            view_formats: &[TextureFormat::Rgba8UnormSrgb],
         });
-
-        let width_nonzero = match NonZeroU32::try_from(4 * resolution.width()) {
-            Ok(w) => Some(w),
-            Err(why) => return Err(NokhwaError::ReadFrameError(why.to_string())),
-        };
-
-        let height_nonzero = match NonZeroU32::try_from(resolution.height()) {
-            Ok(h) => Some(h),
-            Err(why) => return Err(NokhwaError::ReadFrameError(why.to_string())),
-        };
 
         queue.write_texture(
             ImageCopyTexture {
@@ -2624,8 +2615,8 @@ impl JSCamera {
             frame.borrow(),
             ImageDataLayout {
                 offset: 0,
-                bytes_per_row: width_nonzero,
-                rows_per_image: height_nonzero,
+                bytes_per_row: Some(4 * resolution.width()),
+                rows_per_image: Some(resolution.height()),
             },
             texture_size,
         );

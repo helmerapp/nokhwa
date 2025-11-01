@@ -15,8 +15,8 @@
  */
 use crate::error::NokhwaError;
 use crate::types::{
-    buf_bgr_to_rgb, buf_mjpeg_to_rgb, buf_nv12_to_rgb, buf_yuyv422_to_rgb, color_frame_formats, frame_formats,
-    mjpeg_to_rgb, nv12_to_rgb, yuyv422_to_rgb, FrameFormat, Resolution,
+    buf_bgr_to_rgb, buf_mjpeg_to_rgb, buf_nv12_to_rgb, buf_yuyv422_to_rgb, color_frame_formats,
+    frame_formats, mjpeg_to_rgb, nv12_to_rgb, yuyv422_to_rgb, FrameFormat, Resolution,
 };
 use image::{Luma, LumaA, Pixel, Rgb, Rgba};
 use std::fmt::Debug;
@@ -85,7 +85,7 @@ impl FormatDecoder for RgbFormat {
                     rgb[index + 2] = px[0];
                 });
                 Ok(rgb)
-            },
+            }
             FrameFormat::NV12 => nv12_to_rgb(resolution, data, false),
         }
     }
@@ -442,8 +442,6 @@ impl FormatDecoder for LumaAFormat {
         }
     }
 }
-
-
 
 /// let image: ImageBuffer<Rgb<u8>, Vec<u8>> = buffer.to_image::<YuyvFormat>();
 /// ```

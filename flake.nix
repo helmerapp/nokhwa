@@ -12,17 +12,16 @@
         pkgs = import nixpkgs {
           inherit system overlays;
         };
+        rustbin = pkgs.rust-bin.selectLatestNightlyWith (toolchain:
+          toolchain.default.override {
+            extensions = ["rust-src" "clippy" "rustfmt" "miri"];
+          });
       in
       {
         devShells.default = pkgs.mkShell {
           #LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
           #BINDGEN_EXTRA_CLANG_ARGS = "-isystem ${pkgs.libclang.lib}/lib/clang/${flake-utils.lib.getVersion pkgs.clang}/include";
 
-          buildInputs = with pkgs; [
-            rust-bin.stable.latest.default
-            rust-bin.stable.latest.rustfmt
-            rust-bin.stable.latest.clippy
-          ];
           nativeBuildInputs = [
               pkgs.pkg-config
               pkgs.cmake
@@ -42,6 +41,7 @@
                 llvmPackages.clang
                 libv4l
                 v4l-utils
+                rustbin
             ];
             LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
             shellHook = ''

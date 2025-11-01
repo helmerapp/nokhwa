@@ -1,6 +1,6 @@
 [package]
 name = "nokhwa-bindings-windows"
-version = "0.4.2"
+version = "0.4.4"
 authors = ["l1npengtul"]
 edition = "2021"
 license = "Apache-2.0"
@@ -14,17 +14,15 @@ keywords = ["media-foundation", "windows", "capture", "webcam"]
 docs-only = []
 
 [dependencies]
+once_cell = "1"                                                                                                                                                                                          
 
 [dependencies.nokhwa-core]
 version = "0.1"
 path = "../nokhwa-core"
 
 [target.'cfg(target_os="windows")'.dependencies.windows]
-version = "0.43"
+version = "0.61"
 features = ["Win32_Media_MediaFoundation", "Win32_System_Com", "Win32_Foundation", "Win32_Media_DirectShow", "Win32_Media", "Win32", "Win32_Media_KernelStreaming"]
-
-[target.'cfg(target_os="windows")'.dependencies.once_cell]
-version = "1.16"
 
 [package.metadata.docs.rs]
 features = ["docs-only"]
